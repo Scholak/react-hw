@@ -4,17 +4,22 @@ import { useNavigate } from 'react-router-dom'
 function NoteList() {
 	const navigate = useNavigate()
 
+	const user = window.localStorage.getItem('auth')
+	const allNotes = JSON.parse(window.localStorage.getItem('notes')) || []
 	const [notes, setNotes] = useState(
-		window.localStorage.getItem('notes')
-			? JSON.parse(window.localStorage.getItem('notes'))
-			: []
+		allNotes.filter(note => note.user === user)
 	)
-	const [note, setNote] = useState({})
+	const [note, setNote] = useState({
+		title: '',
+		body: '',
+		user,
+	})
 
 	const titleEl = useRef()
 	const bodyEl = useRef()
 
 	useEffect(() => {
+		console.log(typeof allNotes)
 		if (!window.localStorage.getItem('auth')) {
 			navigate('/login')
 		}
@@ -30,18 +35,29 @@ function NoteList() {
 	const handleSubmit = e => {
 		e.preventDefault()
 		if (note.title && note.body) {
-			const newNotes = [...notes, note]
-			window.localStorage.setItem('notes', JSON.stringify(newNotes))
-			setNotes(newNotes)
+			allNotes.push(note)
+			window.localStorage.setItem('notes', JSON.stringify(allNotes))
+			setNotes([...notes, note])
 			titleEl.current.value = ''
 			bodyEl.current.value = ''
-			setNote({})
+			setNote({
+				title: '',
+				body: '',
+				user,
+			})
 		}
 	}
 
 	const handleDelete = title => {
-		const newNotes = notes.filter(note => note.title != title)
-		window.localStorage.setItem('notes', JSON.stringify(newNotes))
+		const newNotes = notes.filter(note => note.title !== title)
+		window.localStorage.setItem(
+			'notes',
+			JSON.stringify(
+				allNotes.filter(
+					note => note.title !== title && note.user !== user
+				)
+			)
+		)
 		setNotes(newNotes)
 	}
 
