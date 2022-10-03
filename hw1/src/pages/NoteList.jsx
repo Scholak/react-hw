@@ -5,11 +5,14 @@ function NoteList() {
 	const navigate = useNavigate()
 
 	const user = window.localStorage.getItem('auth')
+	const id = Date.now()
+
 	const allNotes = JSON.parse(window.localStorage.getItem('notes')) || []
 	const [notes, setNotes] = useState(
 		allNotes.filter(note => note.user === user)
 	)
 	const [note, setNote] = useState({
+		id,
 		title: '',
 		body: '',
 		user,
@@ -19,7 +22,6 @@ function NoteList() {
 	const bodyEl = useRef()
 
 	useEffect(() => {
-		console.log(typeof allNotes)
 		if (!window.localStorage.getItem('auth')) {
 			navigate('/login')
 		}
@@ -48,15 +50,11 @@ function NoteList() {
 		}
 	}
 
-	const handleDelete = title => {
-		const newNotes = notes.filter(note => note.title !== title)
+	const handleDelete = id => {
+		const newNotes = notes.filter(note => note.id !== id)
 		window.localStorage.setItem(
 			'notes',
-			JSON.stringify(
-				allNotes.filter(
-					note => note.title !== title && note.user !== user
-				)
-			)
+			JSON.stringify(allNotes.filter(note => note.id !== id))
 		)
 		setNotes(newNotes)
 	}
@@ -84,11 +82,11 @@ function NoteList() {
 			<h2>Note List</h2>
 			<div className='notes'>
 				{notes &&
-					notes.map((note, index) => (
-						<div key={index}>
+					notes.map(note => (
+						<div key={note.id}>
 							<h3>{note.title}</h3>
 							<p>{note.body}</p>
-							<button onClick={() => handleDelete(note.title)}>
+							<button onClick={() => handleDelete(note.id)}>
 								x
 							</button>
 						</div>
